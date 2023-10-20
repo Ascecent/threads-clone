@@ -1,9 +1,3 @@
-/* eslint-disable camelcase */
-// Resource: https://clerk.com/docs/users/sync-data-to-your-backend
-// Above article shows why we need webhooks i.e., to sync data to our backend
-
-// Resource: https://docs.svix.com/receiving/verifying-payloads/why
-// It's a good practice to verify webhooks. Above article shows why we should do it
 import { Webhook, WebhookRequiredHeaders } from 'svix';
 import { headers } from 'next/headers';
 
@@ -18,8 +12,6 @@ import {
 	updateCommunityInfo,
 } from '@/lib/actions';
 
-// Resource: https://clerk.com/docs/integration/webhooks#supported-events
-// Above document lists the supported events
 type EventType =
 	| 'organization.created'
 	| 'organizationInvitation.created'
@@ -48,10 +40,10 @@ export const POST = async (request: Request) => {
 	// After adding the endpoint, you'll see the secret on the right side.
 	const wh = new Webhook(process.env.NEXT_CLERK_WEBHOOK_SECRET || '');
 
-	let evnt: Event | null = null;
+	let event: Event | null = null;
 
 	try {
-		evnt = wh.verify(
+		event = wh.verify(
 			JSON.stringify(payload),
 			heads as IncomingHttpHeaders & WebhookRequiredHeaders,
 		) as Event;
@@ -59,14 +51,13 @@ export const POST = async (request: Request) => {
 		return NextResponse.json({ message: err }, { status: 400 });
 	}
 
-	const eventType: EventType = evnt?.type!;
+	const eventType: EventType = event?.type!;
 
-	// Listen organization creation event
 	if (eventType === 'organization.created') {
 		// Resource: https://clerk.com/docs/reference/backend-api/tag/Organizations#operation/CreateOrganization
-		// Show what evnt?.data sends from above resource
+		// Show what event?.data sends from above resource
 		const { id, name, slug, logo_url, image_url, created_by } =
-			evnt?.data ?? {};
+			event?.data ?? {};
 
 		try {
 			// @ts-ignore
@@ -99,7 +90,7 @@ export const POST = async (request: Request) => {
 	if (eventType === 'organizationInvitation.created') {
 		try {
 			// Resource: https://clerk.com/docs/reference/backend-api/tag/Organization-Invitations#operation/CreateOrganizationInvitation
-			console.log('Invitation created', evnt?.data);
+			console.log('Invitation created', event?.data);
 
 			return NextResponse.json(
 				{ message: 'Invitation created' },
@@ -119,9 +110,9 @@ export const POST = async (request: Request) => {
 	if (eventType === 'organizationMembership.created') {
 		try {
 			// Resource: https://clerk.com/docs/reference/backend-api/tag/Organization-Memberships#operation/CreateOrganizationMembership
-			// Show what evnt?.data sends from above resource
-			const { organization, public_user_data } = evnt?.data;
-			console.log('created', evnt?.data);
+			// Show what event?.data sends from above resource
+			const { organization, public_user_data } = event?.data;
+			console.log('created', event?.data);
 
 			await addMemberToCommunity(
 				// @ts-ignore
@@ -148,9 +139,8 @@ export const POST = async (request: Request) => {
 	if (eventType === 'organizationMembership.deleted') {
 		try {
 			// Resource: https://clerk.com/docs/reference/backend-api/tag/Organization-Memberships#operation/DeleteOrganizationMembership
-			// Show what evnt?.data sends from above resource
-			const { organization, public_user_data } = evnt?.data;
-			console.log('removed', evnt?.data);
+			const { organization, public_user_data } = event?.data;
+			console.log('removed', event?.data);
 
 			await removeMemberFromCommunity(
 				// @ts-ignore
@@ -177,9 +167,9 @@ export const POST = async (request: Request) => {
 	if (eventType === 'organization.updated') {
 		try {
 			// Resource: https://clerk.com/docs/reference/backend-api/tag/Organizations#operation/UpdateOrganization
-			// Show what evnt?.data sends from above resource
-			const { id, logo_url, name, slug } = evnt?.data;
-			console.log('updated', evnt?.data);
+			// Show what event?.data sends from above resource
+			const { id, logo_url, name, slug } = event?.data;
+			console.log('updated', event?.data);
 
 			// @ts-ignore
 			await updateCommunityInfo(id, name, slug, logo_url);
@@ -202,9 +192,8 @@ export const POST = async (request: Request) => {
 	if (eventType === 'organization.deleted') {
 		try {
 			// Resource: https://clerk.com/docs/reference/backend-api/tag/Organizations#operation/DeleteOrganization
-			// Show what evnt?.data sends from above resource
-			const { id } = evnt?.data;
-			console.log('deleted', evnt?.data);
+			const { id } = event?.data;
+			console.log('deleted', event?.data);
 
 			// @ts-ignore
 			await deleteCommunity(id);

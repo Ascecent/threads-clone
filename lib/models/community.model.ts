@@ -10,7 +10,7 @@ export interface ICommunity extends Document {
 	bio: string;
 	createdBy: IUser['_id'] | IUser;
 	threads: IThread['_id'][] | IThread[];
-	members: ICommunity['_id'][] | ICommunity[];
+	members: IUser['_id'][] | IUser[];
 }
 
 const CommunitySchema: Schema = new Schema({

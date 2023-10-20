@@ -1,6 +1,7 @@
 import { IThread } from '@/lib/models';
 import Link from 'next/link';
 import Image from 'next/image';
+import { formatDateString } from '@/lib/utils';
 
 interface Props {
 	thread: IThread;
@@ -9,7 +10,7 @@ interface Props {
 }
 
 export const ThreadCard = ({ thread, isReply, currentUserId }: Props) => {
-	const { author, replies, id, text } = thread;
+	const { author, replies, id, text, community, createdAt } = thread;
 
 	return (
 		<article
@@ -98,6 +99,31 @@ export const ThreadCard = ({ thread, isReply, currentUserId }: Props) => {
 						</div>
 					</div>
 				</div>
+
+				{/* TODO: Delete thread */}
+				{/* TODO: Show comment logos */}
+
+				{!isReply && community && (
+					<Link
+						href={`/communities/${community.id}`}
+						className='mt-5 flex items-center'
+					>
+						<p className='text-subtle-medium text-gray-1'>
+							{formatDateString(createdAt.toString())} in{' '}
+							<span className='text-light-1'>
+								{community.name}
+							</span>
+						</p>
+
+						<Image
+							src={community.avatar}
+							alt={community.name}
+							width={14}
+							height={14}
+							className='ml-1 rounded-full object-cover'
+						/>
+					</Link>
+				)}
 			</div>
 		</article>
 	);

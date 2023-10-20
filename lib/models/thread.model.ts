@@ -1,10 +1,11 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { IUser } from '.';
+
+import { ICommunity, IUser } from '@/lib/models';
 
 export interface IThread extends Document {
 	text: string;
 	author: IUser['_id'] | IUser;
-	community: string;
+	community: ICommunity['_id'] | ICommunity | null;
 	createdAt: Date;
 	parentId: IThread['_id'] | IThread | null;
 	replies: IThread['_id'][] | IThread[];
